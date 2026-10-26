@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flora – Plant Identifier</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#3f7a57; --bg2:#356a4a;
+  --card:#faf9f5; --ink:#1f2a24; --muted:#5f6b63; --line:#e6e3d8;
+  --accent:#2f5d44; --accent-press:#234734; --soft:#eef0e6; --soft-press:#dfe4d4;
+  --warn:#8a4b12; --warnbg:#fbefdc;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#2f6148; --bg2:#285240;
+    --card:#232a26; --ink:#eef1ea; --muted:#a3afa6; --line:#34403a;
+    --accent:#8fcaa5; --accent-press:#6fb28a; --soft:#2d3631; --soft-press:#394640;
+    --warn:#f0c48b; --warnbg:#3a2f1f;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#2f6148; --bg2:#285240; --card:#232a26; --ink:#eef1ea; --muted:#a3afa6; --line:#34403a;
+  --accent:#8fcaa5; --accent-press:#6fb28a; --soft:#2d3631; --soft-press:#394640; --warn:#f0c48b; --warnbg:#3a2f1f;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);background:var(--bg);
+  background-image:radial-gradient(1200px 600px at 80% -10%, rgba(255,255,255,.12), transparent 60%),linear-gradient(180deg,var(--bg),var(--bg2));
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;line-height:1.55}
+.wrap{max-width:680px;margin:0 auto;padding:28px 18px 60px}
+header{color:#f6f5ee;margin-bottom:22px}
+h1{font-family:Georgia,"Times New Roman",serif;font-weight:500;font-size:2.1rem;margin:0 0 4px;letter-spacing:-.01em}
+header p{margin:0;opacity:.85}
+.card{background:var(--card);border-radius:20px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.14);margin-bottom:16px}
+.tabs{display:flex;gap:6px;background:var(--soft);padding:5px;border-radius:14px;margin-bottom:18px}
+.press{cursor:pointer;border:0;font:inherit;transition:transform .12s ease,background .15s ease,box-shadow .15s ease,color .15s ease;-webkit-tap-highlight-color:transparent;user-select:none}
+.press:active{transform:translateY(2px) scale(.97)}
+.tab{flex:1;padding:10px 12px;border-radius:10px;background:transparent;color:var(--muted);font-weight:500}
+.tab:hover{background:var(--soft-press)}
+.tab:active{background:var(--soft-press)}
+.tab.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.btn{display:inline-block;padding:12px 20px;border-radius:12px;background:var(--accent);color:var(--card);font-weight:600;box-shadow:0 3px 0 var(--accent-press)}
+.btn:hover{background:var(--accent-press)}
+.btn:active{background:var(--accent-press);box-shadow:0 0 0 var(--accent-press)}
+.btn.ghost{background:var(--soft);color:var(--ink);box-shadow:0 3px 0 var(--soft-press)}
+.btn.ghost:hover,.btn.ghost:active{background:var(--soft-press)}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:0;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit;transition:border-color .15s,box-shadow .15s}
+input[type=text]:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 4px rgba(63,122,87,.18)}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:200px;border:2px dashed var(--line);border-radius:16px;background:var(--soft);color:var(--muted);text-align:center;width:100%;padding:16px}
+.drop:hover{background:var(--soft-press);border-color:var(--accent)}
+.drop:active{background:var(--soft-press)}
+.drop .big{font-size:2.2rem}
+.preview{width:100%;max-height:340px;object-fit:cover;border-radius:16px;display:block;margin-bottom:12px}
+.hidden{display:none!important}
+.result h2{font-family:Georgia,serif;font-weight:500;font-size:1.7rem;margin:0}
+.sci{font-style:italic;color:var(--muted);margin:2px 0 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.chip{background:var(--soft);padding:4px 10px;border-radius:99px;font-size:.82rem;color:var(--muted)}
+.sec{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--soft);transition:background .15s,transform .12s}
+.sec:hover{background:var(--soft-press)}
+.sec:active{transform:scale(.99)}
+.sec h3{margin:0 0 6px;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.sec p,.sec li{margin:0;font-size:.97rem}
+.sec ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.warn{background:var(--warnbg);color:var(--warn);padding:12px 14px;border-radius:14px;margin-top:16px;font-size:.92rem}
+.conf{height:6px;border-radius:9px;background:var(--line);overflow:hidden;margin:4px 0 12px}
+.conf i{display:block;height:100%;background:var(--accent);border-radius:9px;transition:width .6s ease}
+.msg{color:var(--muted);text-align:center;padding:18px 6px}
+.spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 10px;animation:s .8s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+footer{color:#f6f5ee;opacity:.7;text-align:center;font-size:.8rem;margin-top:20px}
+.wrap{position:relative;z-index:1}
+.waves{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.waves svg{position:absolute;left:0;width:200%;animation:drift linear infinite}
+.waves path{fill:rgba(255,255,255,.07);stroke:rgba(255,255,255,.28);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.waves .w1{bottom:-4%;height:50%;animation-duration:46s}
+.waves .w2{bottom:6%;height:42%;animation-duration:62s;animation-direction:reverse}
+.waves .w3{bottom:18%;height:34%;animation-duration:80s}
+.waves .w2 path{fill:rgba(255,255,255,.05);stroke:rgba(255,255,255,.2)}
+.waves .w3 path{fill:rgba(255,255,255,.04);stroke:rgba(255,255,255,.14)}
+.waves canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pane{animation:fadeIn .5s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.plant{color:var(--accent);overflow:visible}
+.plant .sway{transform-origin:40px 88px;animation:sway 4.5s ease-in-out infinite}
+.plant .leaf{animation:leafSway 3.6s ease-in-out infinite}
+.plant .la{transform-origin:40px 60px}
+.plant .lb{transform-origin:40px 45px;animation-delay:-1.2s}
+.plant .lc{transform-origin:40px 18px;animation-delay:-2.4s}
+@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes leafSway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(7deg)}}
+@media (prefers-reduced-motion: reduce){.waves svg,.plant .sway,.plant .leaf,.pane{animation:none}}
+.tip{margin-top:16px;display:flex;align-items:center;gap:10px;min-height:3.6em;padding:10px 16px;border-radius:16px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#f6f5ee;font-size:.95rem;cursor:pointer;transition:background .15s ease,transform .12s ease;-webkit-tap-highlight-color:transparent;user-select:none}
+.tip:hover{background:rgba(255,255,255,.2)}
+.tip:active{transform:translateY(2px) scale(.98);background:rgba(255,255,255,.26)}
+.tip .ico{font-size:1.3rem;flex:none}
+.tip .txt{transition:opacity .7s ease,transform .7s ease}
+.tip.out .txt,.tip.out .ico{opacity:0;transform:translateY(6px)}
+.tip .ico{transition:opacity .7s ease,transform .7s ease}
+.veil{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .9s ease;background:radial-gradient(900px 520px at 15% 0%,rgba(90,170,120,.2),transparent 62%),radial-gradient(800px 500px at 100% 100%,rgba(60,130,110,.16),transparent 60%),linear-gradient(180deg,#101b15,#080f0b)}
+:root[data-theme="dark"] .veil{opacity:1}
+.waves canvas{transition:opacity .9s ease}
+.waves #leaves{opacity:0}
+:root[data-theme="dark"] .waves #leaves{opacity:1}
+:root[data-theme="dark"] .waves #silk{opacity:0}
+.card,.sec,input[type=text]{transition:background .6s ease,color .6s ease,border-color .3s ease,transform .12s ease,box-shadow .15s ease}
+.themeBtn{position:fixed;z-index:10;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:99px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#f6f5ee;font-size:.85rem;font-weight:600;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.themeBtn:hover{background:rgba(255,255,255,.28)}
+.themeBtn:active{background:rgba(255,255,255,.36);transform:translateY(2px) scale(.95)}
+#themeIco{display:inline-block;transition:transform .5s ease}
+:root[data-theme="dark"] #themeIco{transform:rotate(360deg)}
+header h1{font-family:"Fredoka","Nunito","Trebuchet MS",system-ui,sans-serif;font-weight:600;font-size:3rem;line-height:1;letter-spacing:0;margin:0 0 6px}
+h1.flow span{display:inline-block;animation:letterFlow 5s ease-in-out infinite}
+@keyframes letterFlow{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-3px) rotate(-1.5deg)}}
+@media (prefers-reduced-motion: reduce){h1.flow span{animation:none}}
+</style>
+</head>
+<body>
+<div class="veil" aria-hidden="true"></div>
+<div class="waves" aria-hidden="true">
+  <canvas id="silk"></canvas>
+  <canvas id="leaves"></canvas>
+</div>
+<button class="press themeBtn" id="themeBtn" aria-label="Switch between light and dark mode"><span id="themeIco">🌙</span><span id="themeLbl">Dark</span></button>
+<div class="wrap">
+  <header>
+    <h1 class="flow" aria-label="Flora"><span aria-hidden="true" style="--i:0">F</span><span aria-hidden="true" style="--i:1">l</span><span aria-hidden="true" style="--i:2">o</span><span aria-hidden="true" style="--i:3">r</span><span aria-hidden="true" style="--i:4">a</span></h1>
+    <p>Snap a photo or type a name to meet any plant.</p>
+    <div class="tip" id="tip" title="Tap for another"><span class="ico" id="tipIco">🌱</span><span class="txt" id="tipTxt"></span></div>
+  </header>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="press tab on" id="tabPhoto">Take a photo</button>
+      <button class="press tab" id="tabName">Search by name</button>
+    </div>
+
+    <div id="photoPane" class="pane">
+      <input type="file" id="file" accept="image/*" capture="environment" class="hidden">
+      <button class="press drop" id="drop"><svg class="plant" viewBox="0 0 80 90" width="64" height="72" aria-hidden="true"><g class="sway"><path d="M40 88 C40 60 38 40 40 18" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/><path class="leaf la" d="M40 60 C24 58 14 48 12 38 C26 38 38 46 40 60Z" fill="currentColor" opacity=".85"/><path class="leaf lb" d="M40 45 C56 43 66 33 68 23 C54 23 42 31 40 45Z" fill="currentColor"/><path class="leaf lc" d="M40 18 C32 10 34 2 40 0 C46 2 48 10 40 18Z" fill="currentColor" opacity=".9"/></g></svg><strong>Tap to take or upload a photo</strong><span>Leaves, flowers, or the whole plant work best</span></button>
+      <div id="previewBox" class="pane hidden">
+        <img id="preview" class="preview" alt="Your plant photo">
+        <div class="row">
+          <button class="press btn" id="idBtn">Identify plant</button>
+          <button class="press btn ghost" id="retake">Choose another</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="namePane" class="pane hidden">
+      <div class="row">
+        <input type="text" id="nameIn" placeholder="e.g. monstera, lavender, saguaro" autocomplete="off">
+        <button class="press btn" id="nameBtn">Look up</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="out"></div>
+  <footer>Identifications are AI estimates. Never eat or handle a wild plant based on this alone.</footer>
+</div>
+
+<script>
+// Where the app sends identification requests.
+// Vercel (recommended): leave as-is, the function lives in /api/identify.js.
+// GitHub Pages + separate server: set the full URL, e.g. 'https://your-proxy.example.com/api/identify'
+window.FLORA_API_URL = '/api/identify';
+
+// Sends a prompt (and optionally one photo) to the AI and resolves with the reply text.
+
+function blobToBase64(blob){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1]);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+async function askAI(prompt, imageBlob){
+  // Running inside claude.ai as a published artifact: use the built-in capability.
+  if(window.claude && window.claude.use){
+    const sample = await window.claude.use('sample');
+    if(!sample) throw { code: 'not_granted' };
+    const opts = { modelTier: 'default', cache: false };
+    if(imageBlob) opts.images = [imageBlob];
+    return (await sample(prompt, opts)).text;
+  }
+
+  // Everywhere else (GitHub, Vercel, localhost): call your own server function.
+  const url = window.FLORA_API_URL;
+  if(!url) throw { code: 'no_backend' };
+  const image = imageBlob ? await blobToBase64(imageBlob) : null;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, image })
+  });
+  if(res.status === 404) throw { code: 'no_backend' };
+  if(res.status === 429) throw { code: 'rate_limited' };
+  if(!res.ok) throw { code: 'server_error' };
+  return (await res.json()).text;
+}
+
+(function(){
+  const cv = document.getElementById('silk'); if(!cv) return;
+  const ctx = cv.getContext('2d'); let W, H;
+  function size(){
+    const d = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+  }
+  const R = [0,1,2,3,4,5,6].map(i => ({ y:.16 + i*.11, amp:.07 + i*.012, f:1 + i*.17, s:.22 + i*.035, p:i*1.9, th:.13 + i*.022, a:.09 + (i%3)*.035 }));
+  const TAU = Math.PI * 2;
+  function top(r, x, t){
+    const u = x / W;
+    return H * (r.y + r.amp*Math.sin(u*TAU*r.f*.55 + t*r.s + r.p) + r.amp*.5*Math.sin(u*TAU*r.f*1.25 - t*r.s*1.4 + r.p*2) + .018*Math.sin(u*TAU*2.6 + t*.5 + r.p));
+  }
+  function thick(r, x, t){
+    return H * r.th * (.5 + .5*Math.sin(x/W*TAU*.75 + t*r.s*.8 + r.p*1.3));
+  }
+  function draw(t){
+    ctx.clearRect(0, 0, W, H);
+    for(const r of R){
+      const g = ctx.createLinearGradient(0, 0, W, 0);
+      g.addColorStop(0, 'rgba(255,255,255,0)');
+      g.addColorStop(.35, 'rgba(255,255,255,' + r.a + ')');
+      g.addColorStop(.7, 'rgba(255,255,255,' + (r.a*.8) + ')');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.beginPath();
+      for(let x = -10; x <= W + 10; x += 8){ const y = top(r, x, t); x === -10 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+      for(let x = W + 10; x >= -10; x -= 8){ ctx.lineTo(x, top(r, x, t) + thick(r, x, t)); }
+      ctx.closePath(); ctx.fillStyle = g; ctx.fill();
+      ctx.beginPath();
+      for(let x = -10; x <= W + 10; x += 8){ const y = top(r, x, t); x === -10 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+      const e = ctx.createLinearGradient(0, 0, W, 0);
+      e.addColorStop(0, 'rgba(255,255,255,0)'); e.addColorStop(.5, 'rgba(255,255,255,.3)'); e.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.strokeStyle = e; ctx.lineWidth = 1.2; ctx.stroke();
+    }
+  }
+  size(); window.addEventListener('resize', () => { size(); draw(performance.now()/1000*.6); });
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ draw(4); return; }
+  (function loop(ms){ if(document.documentElement.dataset.theme !== 'dark') draw(ms/1000*.6); requestAnimationFrame(loop); })(performance.now());
+})();
+
+(function(){
+  const facts = [
+    'Did you know? Bamboo can grow almost a meter in a single day. Talk about a glow-up.',
+    'Fun fact: sunflowers follow the sun across the sky when they’re young. They’re little sun-chasers.',
+    'Here’s a neat one: bananas are technically berries, but strawberries aren’t.',
+    'Some bristlecone pines have been quietly growing for almost 5,000 years. Imagine the stories.',
+    'A Venus flytrap waits for two touches before it snaps shut, so it doesn’t waste energy on raindrops. Smart!',
+    'Scientists have found that many trees share nutrients through underground fungal networks. A real woodland community.',
+    'That fresh-cut grass smell? It’s the grass releasing chemicals after being cut.',
+    'About one in three bites of the food we eat depends on pollinators like bees. Say thanks next time you see one!',
+    'Gentle tip: most houseplants forgive a missed watering far more easily than too much water.',
+    'Quick tip: yellowing leaves are often a sign of overwatering. A little less love can help.',
+    'Try this: wipe dust off your plant’s leaves now and then so they can soak up more light.',
+    'Fun fact: the corpse flower smells like rotting meat to attract flies for pollination. Not one for the vase!',
+    'Moss doesn’t have true roots. It just soaks up water through its leaves.',
+    'Most cacti are native to the Americas, and they store water in their stems to get through dry spells.',
+    'Tropical rainforests cover a small slice of the planet but are home to a huge share of its land species.',
+    'Good to know: plants that lean toward a window are just reaching for light. Give the pot a quarter turn every week.',
+    'Plants make the oxygen we breathe through photosynthesis, so every leaf is doing us a favor.',
+    'A diverse garden is a happy garden. More kinds of flowers means more visits from bees and butterflies.'
+  ];
+  const jokes = [
+    'Okay, one joke: what did the tree say to autumn? “Leaf me alone!” 🍂',
+    'I told my plants a joke. They didn’t laugh, but they did start to grow on me.',
+    'Why did the plant go to therapy? Too many unresolved root issues.',
+    'How do trees get online? They just log in. 🌳'
+  ];
+  const box = document.getElementById('tip'), ico = document.getElementById('tipIco'), txt = document.getElementById('tipTxt');
+  if(!box) return;
+  const order = facts.map((_, i) => i).sort(() => Math.random() - .5);
+  let fi = 0, ji = 0, lastJoke = true, timer;
+  function next(){
+    let t, i = '🌱';
+    if(!lastJoke && Math.random() < .17){ t = jokes[ji++ % jokes.length]; i = '😄'; lastJoke = true; }
+    else { t = facts[order[fi++ % order.length]]; lastJoke = false; }
+    return [t, i];
+  }
+  function swap(){
+    box.classList.add('out');
+    setTimeout(() => { const [t, i] = next(); txt.textContent = t; ico.textContent = i; box.classList.remove('out'); }, 700);
+  }
+  function start(){ clearInterval(timer); timer = setInterval(swap, 5000); }
+  const [t0, i0] = next(); txt.textContent = t0; ico.textContent = i0;
+  box.onclick = () => { swap(); start(); };
+  start();
+})();
+
+(function(){
+  const cv = document.getElementById('leaves'); if(!cv) return;
+  const ctx = cv.getContext('2d'), TAU = Math.PI * 2; let W, H, P = [];
+  const cols = [[94,170,120],[64,140,100],[120,190,130],[50,115,95],[150,200,110],[80,160,150],[214,130,150],[236,206,112],[240,238,228]];
+  const types = ['leaf','fern','flower','clover','ginkgo','rosette','leaf','fern','ginkgo','rosette'];
+  function size(){
+    const d = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; ctx.setTransform(d, 0, 0, d, 0, 0);
+  }
+  function init(){
+    const n = Math.max(20, Math.min(42, Math.round(W * H / 36000)));
+    P = [];
+    for(let i = 0; i < n; i++){
+      const ty = types[i % types.length], dp = .5 + Math.random() * .9;
+      const c = ty === 'flower' ? cols[6 + Math.floor(Math.random()*3)] : cols[Math.floor(Math.random()*6)];
+      P.push({ty, x:Math.random()*W, y:Math.random()*H, s:(14 + Math.random()*22)*dp, r:Math.random()*TAU, vr:(Math.random()-.5)*.5, ph:Math.random()*TAU, sp:.6 + dp*.6, c, a:.3 + dp*.28});
+    }
+  }
+  function shape(p, tm){
+    const s = p.s, a = p.a;
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r + Math.sin(tm*.8 + p.ph)*.35);
+    ctx.fillStyle = 'rgba(' + p.c + ',' + a + ')'; ctx.strokeStyle = 'rgba(255,255,255,' + (a*.35) + ')'; ctx.lineWidth = 1;
+    if(p.ty === 'leaf'){
+      ctx.beginPath(); ctx.moveTo(0,-s); ctx.bezierCurveTo(s*.75,-s*.5,s*.75,s*.5,0,s); ctx.bezierCurveTo(-s*.75,s*.5,-s*.75,-s*.5,0,-s); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0,-s*.9); ctx.lineTo(0,s*1.15); ctx.stroke();
+    } else if(p.ty === 'fern'){
+      ctx.beginPath(); ctx.moveTo(0,-s*1.3); ctx.lineTo(0,s*1.3); ctx.lineWidth = 1.5; ctx.stroke();
+      for(let k = 0; k < 9; k++){
+        const t = k/8, yy = -s*1.2 + t*s*2.4, w = s*.6*(.25 + .75*Math.sin(Math.min(1, t*1.2 + .1)*Math.PI*.75));
+        ctx.beginPath(); ctx.ellipse(w*.55, yy, w*.55, s*.1, .45, 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(-w*.55, yy, w*.55, s*.1, -.45, 0, TAU); ctx.fill();
+      }
+    } else if(p.ty === 'flower'){
+      for(let k = 0; k < 6; k++){ ctx.save(); ctx.rotate(k*TAU/6); ctx.beginPath(); ctx.ellipse(0,-s*.5,s*.28,s*.5,0,0,TAU); ctx.fill(); ctx.restore(); }
+      ctx.beginPath(); ctx.arc(0,0,s*.2,0,TAU); ctx.fillStyle = 'rgba(255,214,110,' + Math.min(1, a + .2) + ')'; ctx.fill();
+    } else if(p.ty === 'clover'){
+      for(let k = 0; k < 3; k++){ ctx.save(); ctx.rotate(k*TAU/3); ctx.beginPath(); ctx.arc(0,-s*.45,s*.42,0,TAU); ctx.fill(); ctx.restore(); }
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,s*1.3); ctx.stroke();
+    } else if(p.ty === 'ginkgo'){
+      ctx.beginPath(); ctx.moveTo(0,s*.9); ctx.arc(0,s*.9,s*1.5,-Math.PI/2-.85,-Math.PI/2+.85); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0,s*.9); ctx.lineTo(0,s*1.5); ctx.stroke();
+    } else {
+      for(let k = 0; k < 9; k++){ ctx.save(); ctx.rotate(k*TAU/9); ctx.beginPath(); ctx.moveTo(0,0); ctx.quadraticCurveTo(s*.28,-s*.5,0,-s); ctx.quadraticCurveTo(-s*.28,-s*.5,0,0); ctx.fill(); ctx.stroke(); ctx.restore(); }
+    }
+    ctx.restore();
+  }
+  function draw(tm, dt){
+    ctx.clearRect(0, 0, W, H);
+    for(const p of P){
+      p.x += (24 + 16*Math.sin(p.y*.006 + tm*.5 + p.ph))*dt*p.sp;
+      p.y += (9 + 14*Math.sin(p.x*.005 + tm*.4 + p.ph))*dt*p.sp;
+      p.r += p.vr*dt;
+      if(p.x > W + 70){ p.x = -70; p.y = Math.random()*H; }
+      if(p.y > H + 70){ p.y = -70; p.x = Math.random()*W; }
+      if(p.y < -80){ p.y = H + 70; }
+      shape(p, tm);
+    }
+  }
+  size(); init();
+  window.addEventListener('resize', () => { size(); init(); draw(0, 0); });
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){ draw(0, 0); return; }
+  let last = performance.now();
+  (function loop(ms){
+    const dt = Math.min(.05, (ms - last)/1000); last = ms;
+    if(document.documentElement.dataset.theme === 'dark') draw(ms/1000, dt);
+    requestAnimationFrame(loop);
+  })(last);
+})();
+
+(function(){
+  const root = document.documentElement, ico = document.getElementById('themeIco'), lbl = document.getElementById('themeLbl');
+  function apply(m){
+    root.dataset.theme = m;
+    ico.textContent = m === 'dark' ? '\u2600\ufe0f' : '\ud83c\udf19';
+    lbl.textContent = m === 'dark' ? 'Light' : 'Dark';
+    try{ localStorage.setItem('fernly-theme', m); }catch(e){}
+  }
+  let saved = null; try{ saved = localStorage.getItem('fernly-theme'); }catch(e){}
+  apply(saved === 'dark' ? 'dark' : 'light');
+  document.getElementById('themeBtn').onclick = () => apply(root.dataset.theme === 'dark' ? 'light' : 'dark');
+})();
+
+const $ = id => document.getElementById(id);
+let blob = null, busy = false;
+
+function setMode(photo){
+  $('tabPhoto').classList.toggle('on', photo);
+  $('tabName').classList.toggle('on', !photo);
+  $('photoPane').classList.toggle('hidden', !photo);
+  $('namePane').classList.toggle('hidden', photo);
+}
+$('tabPhoto').onclick = () => setMode(true);
+$('tabName').onclick = () => setMode(false);
+$('drop').onclick = () => $('file').click();
+$('retake').onclick = () => $('file').click();
+
+$('file').onchange = async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    blob = await shrink(f);
+    $('preview').src = URL.createObjectURL(blob);
+    $('drop').classList.add('hidden');
+    $('previewBox').classList.remove('hidden');
+    $('out').innerHTML = '';
+  }catch(err){ show('<div class="card msg">Couldn’t read that image. Try another one.</div>'); }
+  e.target.value = '';
+};
+
+function shrink(file){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const m = 1024, k = Math.min(1, m / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', 0.85);
+    };
+    img.onerror = rej;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+const FORMAT = `Respond with ONLY a JSON object, no markdown fences, with these keys:
+{"identified":true|false,"commonName":"","scientificName":"","family":"","confidence":0-100,"type":"e.g. tree, herb, succulent","native":"native range","summary":"2 sentences","history":"3-4 sentences on human history, naming, discovery or cultural use","biodiversity":["3 to 4 short facts about its ecological role, pollinators, wildlife, habitat, conservation status"],"caution":"toxicity or safety note, or empty string"}
+If the plant can’t be determined, set identified to false and explain in summary.`;
+
+function show(html){ $('out').innerHTML = html; $('out').scrollIntoView({behavior:'smooth', block:'start'}); }
+function loading(t){ show(`<div class="card msg"><div class="spin"></div>${t}</div>`); }
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function run(prompt, images){
+  if(busy) return; busy = true;
+  loading(images ? 'Looking closely at your plant…' : 'Looking it up…');
+  try{
+    const text = await askAI(prompt + '\n\n' + FORMAT, images && images[0]);
+    const t = (text || '').replace(/```json|```/g, '').trim();
+    const d = JSON.parse(t.slice(t.indexOf('{'), t.lastIndexOf('}') + 1));
+    render(d);
+  }catch(err){
+    const m = err && err.code === 'no_backend' ? 'The identifier isn\u2019t connected to a server yet. See the README to set up /api/identify.'
+      : err && err.code === 'not_granted' ? 'Permission was declined, so I couldn’t identify the plant.'
+      : err && err.code === 'rate_limited' ? 'Too many requests. Give it a moment and try again.'
+      : 'Something went wrong. Please try again.';
+    show(`<div class="card msg">${m}</div>`);
+  }finally{ busy = false; }
+}
+
+function render(d){
+  if(!d.identified){
+    show(`<div class="card msg"><strong>Couldn’t pin this one down.</strong><br>${esc(d.summary)}</div>`); return;
+  }
+  const bio = (d.biodiversity || []).map(x => `<li>${esc(x)}</li>`).join('');
+  show(`<div class="card result pane">
+    <h2>${esc(d.commonName)}</h2>
+    <div class="sci">${esc(d.scientificName)}</div>
+    <div class="chips">${d.family?`<span class="chip">${esc(d.family)}</span>`:''}${d.type?`<span class="chip">${esc(d.type)}</span>`:''}${d.native?`<span class="chip">${esc(d.native)}</span>`:''}</div>
+    ${d.confidence!=null?`<div class="conf" title="Confidence"><i style="width:${Math.max(0,Math.min(100,+d.confidence||0))}%"></i></div>`:''}
+    <p>${esc(d.summary)}</p>
+    <div class="sec"><h3>History</h3><p>${esc(d.history)}</p></div>
+    <div class="sec"><h3>Biodiversity</h3><ul>${bio}</ul></div>
+    ${d.caution?`<div class="warn">⚠️ ${esc(d.caution)}</div>`:''}
+  </div>`);
+}
+
+$('idBtn').onclick = () => blob && run('Identify the plant in this photo.', [blob]);
+const lookup = () => {
+  const n = $('nameIn').value.trim(); if(!n) return;
+  run(`Give details about the plant known as "${n}". If the name is ambiguous, pick the most common plant with that name.`);
+};
+$('nameBtn').onclick = lookup;
+$('nameIn').addEventListener('keydown', e => { if(e.key === 'Enter') lookup(); });
+</script>
+</body>
+</html>
